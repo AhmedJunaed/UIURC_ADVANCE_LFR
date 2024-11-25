@@ -21,13 +21,13 @@ int led = 13;               // Arduino built-in LED
 bool is_running = false;    // Flag to track if robot is running or stopped
 
 void setup() {
-  // Set motor pins as OUTPUT
+  // Initialize motor control pins as OUTPUT
   pinMode(IN1, OUTPUT);
   pinMode(IN2, OUTPUT);
   pinMode(IN3, OUTPUT);
   pinMode(IN4, OUTPUT);
 
-  // Set buttons and LED pins
+  // Initialize buttons and LED pins
   pinMode(start_button_pin, INPUT_PULLUP);  // Start button with pull-up resistor
   pinMode(stop_button_pin, INPUT_PULLUP);   // Stop button with pull-up resistor
   pinMode(led, OUTPUT);  // Built-in LED for status
@@ -56,7 +56,7 @@ void loop() {
 
   // If the robot is running, perform line-following
   if (is_running) {
-    display_sensor_values();  // Show sensor values in the Serial Monitor
+    display_sensor_values();  // Show sensor values in the Serial Monitor for debugging
     line_following_with_PID();  // Follow the line using PID control
   }
 }
@@ -89,42 +89,41 @@ void read_sensors() {
 
 // Function to follow the line using PID (Proportional, Integral, Derivative) control
 void line_following_with_PID() {
-  int kp = 50;  // Proportional gain
-  int kd = 500; // Derivative gain
-  float error, previous_error = 0;  // Error to keep track of line position
+  // PID constants: adjust these for fine-tuning
+  int kp = 50;  // Proportional gain (how much correction is applied based on current error)
+  int kd = 500; // Derivative gain (how much correction is applied based on change in error)
+  float error, previous_error = 0;  // Error tracking for line position
   int base_speed = 200;  // Base speed for motors
   int left_motor_speed, right_motor_speed;  // Speed for left and right motors
 
-  while (is_running) {
-    read_sensors();  // Read sensor values
+  // Read sensor data and calculate error to adjust motor speeds
+  read_sensors();  
 
-    // Calculate the error between the set point (center of the line) and the average sensor position
-    error = set_point - avg;
+  // Calculate the error between the set point (center of the line) and the average sensor position
+  error = set_point - avg;
 
-    // Proportional term: adjust motor speed based on the current error
-    int P = error * kp;
+  // Proportional term: adjust motor speed based on the current error
+  int P = error * kp;
 
-    // Derivative term: adjust motor speed based on the change in error
-    int D = kd * (error - previous_error);
+  // Derivative term: adjust motor speed based on the change in error
+  int D = kd * (error - previous_error);
 
-    // Calculate the PID value by combining P and D terms
-    int PID_value = P + D;
+  // Calculate the PID value by combining P and D terms
+  int PID_value = P + D;
 
-    // Update the previous error for the next calculation
-    previous_error = error;
+  // Update the previous error for the next calculation
+  previous_error = error;
 
-    // Adjust motor speeds based on the PID value
-    right_motor_speed = base_speed - PID_value;  // Right motor speed
-    left_motor_speed = base_speed + PID_value;   // Left motor speed
+  // Adjust motor speeds based on the PID value
+  right_motor_speed = base_speed - PID_value;  // Right motor speed
+  left_motor_speed = base_speed + PID_value;   // Left motor speed
 
-    // Move the motors based on the calculated speeds
-    motor(left_motor_speed, right_motor_speed);
+  // Move the motors based on the calculated speeds
+  motor(left_motor_speed, right_motor_speed);
 
-    // Check if the robot is off the line and handle turns
-    if (total == 0) {
-      motor(0, 0);  // Stop motors if no sensors detect the line
-      break;
-    }
+  // Check if the robot is off the line and handle turns
+  if (total == 0) {
+    motor(0, 0);  // Stop motors if no sensors detect the line
   }
 }
 
@@ -149,7 +148,7 @@ void motor(int a, int b) {
     digitalWrite(IN3, 1);
     digitalWrite(IN4, 0);
   } else {
-    a = -(a);
+    a = -(a);  // Make speed negative for reverse motion
     digitalWrite(IN3, 0);
     digitalWrite(IN4, 1);
   }
@@ -159,16 +158,16 @@ void motor(int a, int b) {
     digitalWrite(IN1, 1);
     digitalWrite(IN2, 0);
   } else {
-    b = -(b);
+    b = -(b);  // Make speed negative for reverse motion
     digitalWrite(IN1, 0);
     digitalWrite(IN2, 1);
   }
 
-  // Limit motor speed to a maximum value
+  // Limit motor speed to a maximum value to prevent overheating or erratic behavior
   if (a > 200) a = 200;
   if (b > 200) b = 200;
 
-  // Use PWM to control motor speed
-  analogWrite(enB, a);  // Right motor speed
-  analogWrite(enA, b);  // Left motor speed
+  // Set PWM speed for both motors (motor speed control)
+  analogWrite(enA, a);
+  analogWrite(enB, b);
 }
