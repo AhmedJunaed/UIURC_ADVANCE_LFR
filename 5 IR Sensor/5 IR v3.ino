@@ -20,6 +20,12 @@ int stop_button_pin = 12;   // Stop button pin
 int led = 13;               // LED pin (usually built-in to Arduino)
 bool is_running = false;    // Boolean to track if the robot is running or not
 
+// PID control constants
+int kp = 50;                // Proportional gain for PID control
+int kd = 500;               // Derivative gain for PID control
+int base_speed = 200;       // Base speed for motors
+int turn_speed = 100;       // Speed for turning
+
 void setup() {
   // Set motor driver pins as output
   pinMode(IN1, OUTPUT);
@@ -91,13 +97,9 @@ void Sensor_reading() {
 
 // Function to implement PID-based line-following control
 void PID_LINE_FOLLOW() {
-  int kp = 50;                // Proportional gain for PID control
-  int kd = 500;               // Derivative gain for PID control
   int PID_Value, P, D;        // Variables to store the PID values
   float error, previous_error = 0;  // Variables to store the error and previous error
-  int base_speed = 200;       // Base motor speed
   int left_motor_speed, right_motor_speed;  // Variables for motor speeds
-  int turn_speed = 100;       // Speed for turning
   char t;                     // Variable to store the turn direction
 
   // Continue running while the robot is active
@@ -124,8 +126,8 @@ void PID_LINE_FOLLOW() {
     // Call motor function to move the robot
     motor(left_motor_speed, right_motor_speed);
 
-    Sensor_reading();  // Read the sensor values again
-    if (total == 0) {  // If no sensors detect the line (robot lost the line)
+    // If no sensors detect the line, handle lost line situation
+    if (total == 0) {  // No sensors detecting the line
       digitalWrite(led, HIGH);  // Turn on LED to indicate lost line
 
       // Handle turns if the robot is off the line
@@ -149,7 +151,7 @@ void PID_LINE_FOLLOW() {
       if (total == 5) {
         motor(0, 0);  // Stop the robot
         while (total == 5) Sensor_reading();  // Wait until it's off the stop signal
-      } else if (total == 0) t = 's';  // Go straight if no line is detected
+      }
     }
   }
 }
@@ -157,45 +159,40 @@ void PID_LINE_FOLLOW() {
 // Function to display sensor values in the Serial Monitor for debugging
 void display_value() {
   for (byte i = 0; i < 5; i++) {
-    if (i > 2) {
-      s[i] = analogRead(i + 3);  // Read sensors A6 and A7
-    } else {
-      s[i] = analogRead(i);      // Read sensors A0, A1, A2
-    }
-    // Print sensor values to the Serial Monitor
-    Serial.print(String(s[i]) + " ");
+    Serial.print(s[i]);  // Print sensor state (0 or 1)
+    Serial.print(" ");
   }
-  Serial.println();  // Print a new line after displaying all sensor values
-  delay(50);  // Short delay for readability
+  Serial.println();  // Print a newline
+  delay(100);  // Delay for readability
 }
 
-// Function to control motor movement
+// Function to control the motors
 void motor(int a, int b) {
-  // Motor A control (left motor)
+  // Motor A (Left) control
   if (a > 0) {
-    digitalWrite(IN3, HIGH);  // Set motor direction forward
+    digitalWrite(IN3, HIGH);
     digitalWrite(IN4, LOW);
   } else {
-    a = -(a);  // Reverse direction if the value is negative
+    a = -(a);
     digitalWrite(IN3, LOW);
     digitalWrite(IN4, HIGH);
   }
 
-  // Motor B control (right motor)
+  // Motor B (Right) control
   if (b > 0) {
-    digitalWrite(IN1, HIGH);  // Set motor direction forward
+    digitalWrite(IN1, HIGH);
     digitalWrite(IN2, LOW);
   } else {
-    b = -(b);  // Reverse direction if the value is negative
+    b = -(b);
     digitalWrite(IN1, LOW);
     digitalWrite(IN2, HIGH);
   }
 
-  // Limit the maximum motor speed
+  // Limit motor speed to a maximum value (PWM control)
   if (a > 200) a = 200;
   if (b > 200) b = 200;
 
-  // Set motor speed using PWM
-  analogWrite(enB, a);  // Set speed for motor A
-  analogWrite(enA, b);  // Set speed for motor B
+  // Apply PWM speed control
+  analogWrite(enA, a);  // Apply PWM to Motor A
+  analogWrite(enB, b);  // Apply PWM to Motor B
 }
