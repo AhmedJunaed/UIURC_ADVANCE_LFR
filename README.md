@@ -8,7 +8,7 @@ Code for the ongoing workshop for advance line follower robot
 
 # Motor A Control Pins:
 
-IN1 (Motor A direction) → Pin 6 (Arduino)
+IN1 (Motor A direction) → Pin 6 (Arduino) #
 IN2 (Motor A direction) → Pin 5 (Arduino)
 enA (Motor A speed - PWM) → Pin 9 (Arduino)
 Motor B Control Pins:
