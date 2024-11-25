@@ -48,9 +48,6 @@ This project controls a line-following robot using PID (Proportional-Integral-De
 3. The built-in LED will blink rapidly while the robot is in line-following mode.
 4. Press **Button 2** (pin 12) to stop the motors and pause line following.
 
-### Code Overview:
-- The code uses 5 IR sensors to read the position of the line and calculate an average sensor position.
-- It then uses the **PID control algorithm** to adjust the speed of the left and right motors, ensuring the robot stays on the line.
 
 Function: Stops the line-following operation when pressed.
 
