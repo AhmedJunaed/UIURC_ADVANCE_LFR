@@ -7,7 +7,7 @@
 #define enB 3  // Motor B (Right) speed control (PWM)
 
 // Sensor variables
-int s[6];                  // Array to store sensor readings
+int s[5];                  // Array to store sensor readings
 int threshold = 531;        // Threshold to detect the line (Adjust as needed)
 
 // Push buttons and LED
